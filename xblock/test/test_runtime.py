@@ -1,4 +1,4 @@
-from nose.tools import assert_equals, assert_false, assert_true
+from nose.tools import assert_equals, assert_false, assert_true, assert_raises
 from mock import patch, Mock
 
 from xblock.core import *
@@ -36,6 +36,31 @@ with patch('xblock.core.Namespace.load_classes', return_value=[('test', TestName
         by_type = String(scope=Scope(False, BlockScope.TYPE), default='bt')
         for_all = String(scope=Scope(False, BlockScope.ALL), default='fa')
         user_def = String(scope=Scope(True, BlockScope.DEFINITION), default='sd')
+
+with patch('xblock.core.Namespace.load_classes', return_value=[('test', TestNamespace)]):
+    class TestXBlock(XBlock):
+        """
+        Set up a class that contains ModelTypes as fields.
+        """
+        content = String(scope=Scope.content, default='c')
+        settings = String(scope=Scope.settings, default='s')
+        user_state = String(scope=Scope.user_state, default='ss')
+        preferences = String(scope=Scope.preferences, default='sp')
+        user_info = String(scope=Scope.user_info, default='si')
+        by_type = String(scope=Scope(False, BlockScope.TYPE), default='bt')
+        for_all = String(scope=Scope(False, BlockScope.ALL), default='fa')
+        user_def = String(scope=Scope(True, BlockScope.DEFINITION), default='sd')
+
+        def existing_handler(self, data):
+            """ an existing handler to be used """
+            self.user_state = data
+            return "I am the existing test handler"
+
+        def fallback_handler(self, handler_name, data):
+            """ test fallback handler """
+            self.user_state = data
+            if handler_name == 'test_fallback_handler':
+                return "I have been handled"
 
 
 class DictKeyValueStore(KeyValueStore):
@@ -150,3 +175,23 @@ def test_querypath_parsing():
     expected = Mock()
     expected.parent().descendants().attr("hello")
     assert mrun.q.mock_calls == expected.mock_calls
+
+
+def test_runtime_handle():
+    """
+    Test a simple handler and a fallback handler
+
+    """
+    key_store = DictKeyValueStore()
+    db_model = DbModel(key_store, TestXBlock, 's0', TestUsage('u0', 'd0'))
+    tester = TestXBlock(Mock(), db_model)
+    runtime = MockRuntimeForQuerying()
+    # string we want to update using the handler
+    update_string = "user state update"
+    assert_equals(runtime.handle(tester, 'existing_handler', update_string), 'I am the existing test handler')
+    assert_equals(tester.user_state, update_string)
+
+    # when the handler needs to use the fallback
+    new_update_string = "new update"
+    assert_equals(runtime.handle(tester, 'test_fallback_handler', new_update_string), 'I have been handled')
+    assert_equals(tester.user_state, new_update_string)
