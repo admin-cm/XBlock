@@ -102,3 +102,21 @@ def test_xblock_with_fallback_handler_and_student_state(mock_load_class):
 
     # Now try changing the data. We don't have a handler so this should fail.
     assert_raises(Exception,  c.post, handler_url, "{}", "text/json")
+
+
+class XBlockWithoutStudentView(XBlock):
+    """
+    Test WorkbechRuntime.render caught `NoSuchViewError` exception path
+    """
+    the_data = String(default="def", scope=Scope.user_state)
+
+@patch('xblock.core.XBlock.load_class', return_value=XBlockWithoutStudentView)
+def test_xblock_without_student_view(mock_load_class):
+    """
+    Try to get a response. Will try to render via WorkbenchRuntime.render;
+    since no view is provided in the XBlock, will return a Fragment that
+    indicates there is no view available.
+    """
+    c = Client()
+    response = c.get("/view/xblockwithoutstudentview/")
+    assert 'No such view' in response.content
