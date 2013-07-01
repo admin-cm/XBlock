@@ -110,13 +110,12 @@ class XBlockWithoutStudentView(XBlock):
     """
     the_data = String(default="def", scope=Scope.user_state)
 
+
 @patch('xblock.core.XBlock.load_class', return_value=XBlockWithoutStudentView)
 def test_xblock_without_student_view(mock_load_class):
-    """
-    Try to get a response. Will try to render via WorkbenchRuntime.render;
-    since no view is provided in the XBlock, will return a Fragment that
-    indicates there is no view available.
-    """
+    # Try to get a response. Will try to render via WorkbenchRuntime.render;
+    # since no view is provided in the XBlock, will return a Fragment that
+    # indicates there is no view available.
     c = Client()
     response = c.get("/view/xblockwithoutstudentview/")
     assert 'No such view' in response.content
