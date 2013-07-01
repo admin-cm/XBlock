@@ -13,8 +13,7 @@ except ImportError:
 
 import logging
 
-from django.template import loader as django_template_loader,
-Context as DjangoContext
+from django.template import loader as django_template_loader, Context as DjangoContext
 
 from xblock.core import XBlock, Scope, ModelType
 from xblock.runtime import DbModel, KeyValueStore, Runtime, NoSuchViewError
@@ -228,8 +227,7 @@ class WorkbenchRuntime(Runtime):
         return wrapped
 
     def handler_url(self, url):
-        return "/handler/%s/%s/?student=%s"
-        % (self.usage.id, url, self.student_id)
+        return "/handler/%s/%s/?student=%s" % (self.usage.id, url, self.student_id)
 
     def get_block(self, block_id):
         return create_xblock(Usage.find_usage(block_id), self.student_id)
@@ -241,8 +239,8 @@ class WorkbenchRuntime(Runtime):
     def collect(self, key, block=None):
         block_cls = block.__class__ if block else self.block_cls
 
-        data_model =
-        AnalyticsDbModel(MEMORY_KVS, block_cls, self.student_id, self.usage)
+        data_model = AnalyticsDbModel(
+            MEMORY_KVS, block_cls, self.student_id, self.usage)
         value = data_model.get(key)
         children = []
         for child_id in data_model.get('children', []):
