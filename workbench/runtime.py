@@ -269,8 +269,12 @@ class WorkbenchRuntime(Runtime):
 
     # TODO: [rocha] other name options: scatter, share
     def publish(self, key, value):
-        data = AnalyticsDbModel(MEMORY_KVS,
-                                self.block_cls, self.student_id, self.usage)
+        data = AnalyticsDbModel(
+            MEMORY_KVS,
+            self.block_cls,
+            self.student_id,
+            self.usage
+        )
         data[key] = value
 
 

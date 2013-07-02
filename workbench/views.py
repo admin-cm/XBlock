@@ -50,8 +50,7 @@ def get_student_id(request):
 def index(request):
     the_scenarios = sorted(SCENARIOS.items())
     return render_to_response('index.html', {
-        'scenarios':
-        [(desc, scenario.description) for desc, scenario in the_scenarios]
+        'scenarios': [(desc, scenario.description) for desc, scenario in the_scenarios]
     })
 
 

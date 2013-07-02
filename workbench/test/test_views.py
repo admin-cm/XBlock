@@ -92,7 +92,8 @@ def test_xblock_without_handler_and_student_state(mock_load_class):
     # The default XBlock implementation doesn't provide
     # a handler, so this call should raise an exception
     # (from xblock.runtime.Runtime.handle)
-    assert_raises(Exception,  c.post, handler_url, "{}", "text/json")
+    with assert_raises(Exception):
+        c.post(handler_url, '{}', 'text/json')
 
 
 class XBlockWithoutStudentView(XBlock):

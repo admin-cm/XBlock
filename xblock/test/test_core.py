@@ -90,7 +90,6 @@ def test_field_access():
         field_c = Integer(scope=Scope.user_state, default='field c')
 
     field_tester = FieldTester(MagicMock(), {'field_a': 5, 'field_x': 15})
-
     # verify that the fields have been set
     assert_equals(5, field_tester.field_a)
     assert_equals(10, field_tester.field_b)
@@ -155,28 +154,29 @@ def test_json_field_access():
         __metaclass__ = ModelMetaclass
 
         field_a = Date(scope=Scope.settings)
-        field_b = Date(scope=Scope.content, default=datetime(2013,4,1))
+        field_b = Date(scope=Scope.content, default=datetime(2013, 4, 1))
 
         def __init__(self, model_data):
             self._model_data = model_data
+            self._dirty_fields = set()
 
     field_tester = FieldTester({})
 
     # Check initial values
     assert_equals(None, field_tester.field_a)
-    assert_equals(datetime(2013,4,1), field_tester.field_b)
+    assert_equals(datetime(2013, 4, 1), field_tester.field_b)
 
     # Test no default specified
-    field_tester.field_a = datetime(2013,1,2)
-    assert_equals(datetime(2013,1,2), field_tester.field_a)
+    field_tester.field_a = datetime(2013, 1, 2)
+    assert_equals(datetime(2013, 1, 2), field_tester.field_a)
     del field_tester.field_a
     assert_equals(None, field_tester.field_a)
 
     # Test default explicitly specified
-    field_tester.field_b = datetime(2013,1,2)
-    assert_equals(datetime(2013,1,2), field_tester.field_b)
+    field_tester.field_b = datetime(2013, 1, 2)
+    assert_equals(datetime(2013, 1, 2), field_tester.field_b)
     del field_tester.field_b
-    assert_equals(datetime(2013,4,1), field_tester.field_b)
+    assert_equals(datetime(2013, 4, 1), field_tester.field_b)
 
 
 class TestNamespace(Namespace):
@@ -227,13 +227,16 @@ def test_namespace_field_access(mock_load_classes):
     del field_tester.test.field_x
     assert_equals([], field_tester.test.field_x)
 
-    assert_raises(AttributeError, getattr, field_tester.test, 'field_z')
-    assert_raises(AttributeError, delattr, field_tester.test, 'field_z')
+    with assert_raises(AttributeError):
+        getattr(field_tester.test, 'field_z')
+    with assert_raises(AttributeError):
+        delattr(field_tester.test, 'field_z')
 
     # Namespaces are created on the fly, so setting a new attribute on one
     # has no long-term effect
     field_tester.test.field_z = 'foo'
-    assert_raises(AttributeError, getattr, field_tester.test, 'field_z')
+    with assert_raises(AttributeError):
+        getattr(field_tester.test, 'field_z')
     assert 'field_z' not in field_tester._model_data
 
 
@@ -439,7 +442,10 @@ def test_values():
 def test_values_boolean():
     # Test Boolean, which has values defined
     test_field = Boolean()
-    assert_equals(({'display_name': "True", "value": True}, {'display_name': "False", "value": False}), test_field.values)
+    assert_equals(
+        ({'display_name': "True", "value": True}, {'display_name': "False", "value": False}),
+        test_field.values
+    )
 
 
 def test_values_dict():

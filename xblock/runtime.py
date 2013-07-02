@@ -31,6 +31,7 @@ class KeyValueStore(object):
     # data.
     Key = namedtuple("Key", "scope, student_id, block_scope_id, field_name")
 
+    # TODO [sarina] : provide docstrings for these methods
     def get(self, key):
         pass
 
@@ -50,6 +51,7 @@ class KeyValueStore(object):
 class DbModel(MutableMapping):
     """A dictionary-like interface to the fields on a block."""
 
+    # TODO [dkh/sarina] : provide docstrings for these class methods
     def __init__(self, kvs, block_cls, student_id, usage):
         self._kvs = kvs
         self._student_id = student_id
@@ -139,18 +141,16 @@ class DbModel(MutableMapping):
         return fields
 
     def update(self, *args, **kwargs):
-        """
-        Update the underlying model with the correct values
-        """
+        """Update the underlying model with the correct values."""
         updated_dict = {}
         other_dict = {}
-        # combine all the arguments into a single dict
+        # Combine all the arguments into a single dict.
         if args:
             other_dict = args[0]
         for key in kwargs:
             other_dict[key] = kwargs[key]
 
-        # generate a new dict with the correct mappings
+        # Generate a new dict with the correct mappings.
         for (key, value) in other_dict.items():
             updated_dict[self._key(key)] = value
 
@@ -191,8 +191,6 @@ class Runtime(object):
             view_fn = functools.partial(view_fn, view_name)
 
         frag = view_fn(context)
-
-        # TODO [dkh/sarina]: Need to test this path (eg, view counter)
 
         # Explicitly save because render action may have changed state
         block.save()
@@ -254,10 +252,10 @@ class Runtime(object):
             # Cache results of the handler call for later saving
             results = handler(data)
         else:
-            handler = getattr(block, "fallback_handler", None)
-            if handler:
+            fallback_handler = getattr(block, "fallback_handler", None)
+            if fallback_handler:
                 # Cache results of the handler call for later saving
-                results = handler(handler_name, data)
+                results = fallback_handler(handler_name, data)
             else:
                 raise Exception("Couldn't find handler %r for %r" % (handler_name, block))
 

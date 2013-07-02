@@ -202,11 +202,8 @@ class ModelType(object):
             del instance._model_data_cache[self.name]
 
     def _mark_dirty(self, instance):
-        """ Set this field to dirty on the instance """
-        if not hasattr(instance, '_dirty_fields'):
-            instance._dirty_fields = set()
-        if self not in instance._dirty_fields:
-            instance._dirty_fields.add(self)
+        """Set this field to dirty on the instance."""
+        instance._dirty_fields.add(self)
 
     def __get__(self, instance, owner):
         if instance is None:
@@ -612,9 +609,7 @@ class XBlock(Plugin):
         return node
 
     def save(self):
-        """
-        Save all dirty fields attached to this XBlock
-        """
+        """Save all dirty fields attached to this XBlock."""
         if not self._dirty_fields:
             # nop if _dirty_fields attribute is empty
             return
@@ -656,6 +651,7 @@ class XBlock(Plugin):
         XBlock uses it to implement your storage fields.
 
         """
+        print 'here'
         self.runtime = runtime
         self._model_data = model_data
         self._dirty_fields = set()
