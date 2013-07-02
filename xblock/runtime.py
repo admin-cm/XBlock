@@ -43,7 +43,7 @@ class KeyValueStore(object):
     def has(self, key):
         pass
 
-    def update(self, update_dict):
+    def set_many(self, update_dict):
         pass
 
 
@@ -154,7 +154,7 @@ class DbModel(MutableMapping):
         for (key, value) in other_dict.items():
             updated_dict[self._key(key)] = value
 
-        self._kvs.update(updated_dict)
+        self._kvs.set_many(updated_dict)
 
 
 class Runtime(object):

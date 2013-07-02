@@ -1,8 +1,11 @@
 from mock import patch, MagicMock
-from nose.tools import assert_in, assert_equals, assert_raises, assert_not_equals
+from nose.tools import assert_in, assert_equals, assert_raises,\
+    assert_not_equals
 from datetime import datetime
 
-from xblock.core import *
+from xblock.core import Boolean, ChildrenModelMetaclass, Integer,\
+    KeyValueMultiSaveError, List, ModelMetaclass, ModelType,\
+    Namespace, NamespacesMetaclass, Scope, String, XBlock, XBlockSaveError
 
 
 def test_model_metaclass():
@@ -448,6 +451,7 @@ def test_values_dict():
 def setup_save_failure(update_method):
     """
     Set up tests for when there's a save error in the underlying KeyValueStore
+    TODO : change to set_many
     """
     model_data = MagicMock(spec=dict)
     model_data.__getitem__ = lambda self, name: [name]
@@ -469,6 +473,7 @@ def setup_save_failure(update_method):
 def test_xblock_save_one():
     """
     Mimics a save failure when we only manage to save one of the values
+    TODO : change to set_many
     """
     # mock the update method so that it throws a KeyValueMultiSaveError
     def fake_update(*args, **kwargs):
@@ -493,6 +498,7 @@ def test_xblock_save_one():
 def test_xblock_save_failure_none():
     """
     Mimics a save failure when we don't manage to save any of the values
+    TODO : change to set_many
     """
     # mock the update method so that it throws a KeyValueMultiSaveError
     def fake_update(*args, **kwargs):

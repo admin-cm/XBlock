@@ -625,7 +625,7 @@ class XBlock(Plugin):
                 # Cache should have the right values
                 mt_value = self._model_data_cache[mt.name]
                 fields_to_save[mt.name] = mt.to_json(mt_value)
-            # Change to DbModel to support `update` that calls kvstore `update`
+
             # Throws KeyValueMultiSaveError if things go wrong
             self._model_data.update(fields_to_save)
 
