@@ -83,8 +83,6 @@ def test_children_metaclass():
 
 def test_field_access():
     class FieldTester(XBlock):
-        __metaclass__ = ModelMetaclass
-
         field_a = Integer(scope=Scope.settings)
         field_b = Integer(scope=Scope.content, default=10)
         field_c = Integer(scope=Scope.user_state, default='field c')
@@ -113,8 +111,6 @@ def test_field_access():
 def test_list_field_access():
     '''Check that values that are deleted are restored to their default values'''
     class FieldTester(XBlock):
-        __metaclass__ = ModelMetaclass
-
         field_a = List(scope=Scope.settings)
         field_b = List(scope=Scope.content, default=[1, 2, 3])
 
@@ -248,6 +244,7 @@ def test_defaults_not_shared():
 
         def __init__(self, model_data):
             self._model_data = model_data
+            self._dirty_fields = set()
 
     field_tester_a = FieldTester({})
     field_tester_b = FieldTester({})
@@ -265,6 +262,7 @@ def test_object_identity():
 
         def __init__(self, model_data):
             self._model_data = model_data
+            self._dirty_fields = set()
 
     # Make sure that model_data always returns a different object
     # each time it's actually queried, so that the caching is
@@ -299,6 +297,7 @@ def test_caching_is_per_instance():
 
         def __init__(self, model_data):
             self._model_data = model_data
+            self._dirty_fields = set()
 
     model_data = MagicMock(spec=dict)
     model_data.__getitem__ = lambda self, name: [name]
@@ -457,7 +456,6 @@ def test_values_dict():
 def setup_save_failure(update_method):
     """
     Set up tests for when there's a save error in the underlying KeyValueStore
-    TODO : change to set_many
     """
     model_data = MagicMock(spec=dict)
     model_data.__getitem__ = lambda self, name: [name]
@@ -479,7 +477,6 @@ def setup_save_failure(update_method):
 def test_xblock_save_one():
     """
     Mimics a save failure when we only manage to save one of the values
-    TODO : change to set_many
     """
     # mock the update method so that it throws a KeyValueMultiSaveError
     def fake_update(*args, **kwargs):
@@ -491,12 +488,11 @@ def test_xblock_save_one():
     field_tester.field_a = 20
     field_tester.field_b = 40
 
-    try:
+    with assert_raises(XBlockSaveError) as save_error:
+        # This call should raise an XBlockSaveError
         field_tester.save()
-        # we should raise an XBlockSaveError, so we shouldn't reach this line
-        assert_equals(True, False)
-    except XBlockSaveError as save_error:
-        # verify that the correct data is getting stored by the error
+
+        # Verify that the correct data is getting stored by the error
         assert_equals(len(save_error.saved_fields), 1)
         assert_equals(len(save_error.dirty_fields), 1)
 
@@ -504,7 +500,6 @@ def test_xblock_save_one():
 def test_xblock_save_failure_none():
     """
     Mimics a save failure when we don't manage to save any of the values
-    TODO : change to set_many
     """
     # mock the update method so that it throws a KeyValueMultiSaveError
     def fake_update(*args, **kwargs):
@@ -515,11 +510,10 @@ def test_xblock_save_failure_none():
     field_tester.field_b = 30
     field_tester.field_c = "hello world"
 
-    try:
+    with assert_raises(XBlockSaveError) as save_error:
+        # This call should raise an XBlockSaveError
         field_tester.save()
-        # we should raise an XBlockSaveError, so we shouldn't reach this line
-        assert_equals(True, False)
-    except XBlockSaveError as save_error:
-        # verify that the correct data is getting stored by the error
+
+        # Verify that the correct data is getting stored by the error
         assert_equals(len(save_error.saved_fields), 0)
         assert_equals(len(save_error.dirty_fields), 3)

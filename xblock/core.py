@@ -26,8 +26,8 @@ class KeyValueMultiSaveError(Exception):
         """
         Create a new KeyValueMultiSaveError
 
-        saved_fields - a iterable of field names that were successfully
-        saved before the exception occured
+        `saved_field_names` - an iterable of field names that were
+        successfully saved before the exception occured
         """
         super(KeyValueMultiSaveError, self).__init__()
         self.saved_field_names = saved_field_names
@@ -41,9 +41,9 @@ class XBlockSaveError(Exception):
         """
         Create a new XBlockSaveError
 
-        saved_fields - a set of fields that were successfully
+        `saved_fields` - a set of fields that were successfully
         saved before the error occured
-        dirty_fields - a set of fields that were left dirty after the save
+        `dirty_fields` - a set of fields that were left dirty after the save
         """
         super(XBlockSaveError, self).__init__()
         self.saved_fields = saved_fields
@@ -642,7 +642,6 @@ class XBlock(Plugin):
 
     def __init__(self, runtime, model_data):
         """
-
         `runtime` is an instance of :class:`xblock.core.Runtime`. Use it to
         access the environment.  It is available in XBlock code as
         ``self.runtime``.
@@ -651,7 +650,6 @@ class XBlock(Plugin):
         XBlock uses it to implement your storage fields.
 
         """
-        print 'here'
         self.runtime = runtime
         self._model_data = model_data
         self._dirty_fields = set()
