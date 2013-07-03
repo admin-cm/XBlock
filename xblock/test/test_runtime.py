@@ -113,10 +113,8 @@ def test_namespace_actions():
 
 
 def test_db_model_keys():
-    """
-    Tests that updates to fields are properly recorded in the KeyValueStore,
-    and that the keys have been constructed correctly
-    """
+    # Tests that updates to fields are properly recorded in the KeyValueStore,
+    # and that the keys have been constructed correctly
     key_store = DictKeyValueStore()
     db_model = DbModel(key_store, TestModel, 's0', TestUsage('u0', 'd0'))
     tester = TestModel(Mock(), db_model)
@@ -178,10 +176,8 @@ def test_querypath_parsing():
 
 
 def test_runtime_handle():
-    """
-    Test a simple handler and a fallback handler
+    # Test a simple handler and a fallback handler
 
-    """
     key_store = DictKeyValueStore()
     db_model = DbModel(key_store, TestXBlock, 's0', TestUsage('u0', 'd0'))
     tester = TestXBlock(Mock(), db_model)

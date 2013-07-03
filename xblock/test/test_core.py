@@ -109,7 +109,7 @@ def test_field_access():
 
 
 def test_list_field_access():
-    '''Check that values that are deleted are restored to their default values'''
+    # Check that values that are deleted are restored to their default values
     class FieldTester(XBlock):
         field_a = List(scope=Scope.settings)
         field_b = List(scope=Scope.content, default=[1, 2, 3])
@@ -134,10 +134,10 @@ def test_list_field_access():
 
 
 def test_json_field_access():
-    '''Check that values are correctly converted to and from json in accessors.'''
+    # Check that values are correctly converted to and from json in accessors.
 
     class Date(ModelType):
-        '''Date needs to convert between JSON-compatible persistence and a datetime object'''
+        """Date needs to convert between JSON-compatible persistence and a datetime object"""
         def from_json(self, field):
             """Convert a string representation of a date to a datetime object"""
             return datetime.strptime(field, "%m/%d/%Y")
@@ -254,7 +254,7 @@ def test_defaults_not_shared():
 
 
 def test_object_identity():
-    '''Check that values that are modified are what is returned'''
+    # Check that values that are modified are what is returned
     class FieldTester(object):
         __metaclass__ = ModelMetaclass
 
@@ -289,7 +289,7 @@ def test_object_identity():
 
 
 def test_caching_is_per_instance():
-    '''Test that values cached for one instance do not appear on another'''
+    # Test that values cached for one instance do not appear on another
     class FieldTester(object):
         __metaclass__ = ModelMetaclass
 
@@ -315,11 +315,8 @@ def test_caching_is_per_instance():
 
 
 def test_field_serialization():
-    """
-    Some ModelTypes can define their own serialization mechanisms.
-
-    This test ensures that we are using them properly.
-    """
+    # Some ModelTypes can define their own serialization mechanisms.
+    # This test ensures that we are using them properly.
 
     class CustomField(ModelType):
         """
@@ -475,10 +472,9 @@ def setup_save_failure(update_method):
 
 
 def test_xblock_save_one():
-    """
-    Mimics a save failure when we only manage to save one of the values
-    """
-    # mock the update method so that it throws a KeyValueMultiSaveError
+    # Mimics a save failure when we only manage to save one of the values
+
+    # Mock the update method so that it throws a KeyValueMultiSaveError
     def fake_update(*args, **kwargs):
         other_dict = args[0]
         raise KeyValueMultiSaveError(other_dict.keys()[0])
@@ -498,10 +494,9 @@ def test_xblock_save_one():
 
 
 def test_xblock_save_failure_none():
-    """
-    Mimics a save failure when we don't manage to save any of the values
-    """
-    # mock the update method so that it throws a KeyValueMultiSaveError
+    # Mimics a save failure when we don't manage to save any of the values
+
+    # Mock the update method so that it throws a KeyValueMultiSaveError
     def fake_update(*args, **kwargs):
         raise KeyValueMultiSaveError([])
 
@@ -517,3 +512,47 @@ def test_xblock_save_failure_none():
         # Verify that the correct data is getting stored by the error
         assert_equals(len(save_error.saved_fields), 0)
         assert_equals(len(save_error.dirty_fields), 3)
+
+def test_xblock_write_then_delete():
+    # Tests that setting a field, then deleting it later, doesn't
+    # cause an erroneous write of the originally set value after
+    # a call to `XBlock.save`
+    class FieldTester(XBlock):
+        field_a = Integer(scope=Scope.settings)
+        field_b = Integer(scope=Scope.content, default=10)
+
+    field_tester = FieldTester(MagicMock(), {'field_a': 5})
+    # verify that the fields have been set
+    assert_equals(5, field_tester.field_a)
+    assert_equals(10, field_tester.field_b)
+
+    # Set the fields to new values, and add a new one
+    field_tester.field_a = 20
+    field_tester.field_b = 20
+    field_tester.field_c = 20
+
+     # Before saving, delete all the fields
+    del field_tester.field_a
+    del field_tester.field_b
+    del field_tester.field_c
+ 
+    # Assert that we're now finding the right cached values
+    assert_equals(None, field_tester.field_a)
+    assert_equals(10, field_tester.field_b)
+    # Shouldn't have anything in the cache for field_c
+    with assert_raises(AttributeError):
+        field_tester.field_c
+    # Additionally assert that in the model data, we don't have any values set
+    assert_equals(len(field_tester._model_data), 0)
+    # Perform explicit save
+    field_tester.save()
+
+    # Assert that we're now finding the right cached values
+    assert_equals(None, field_tester.field_a)
+    assert_equals(10, field_tester.field_b)
+    # Shouldn't have anything in the cache for field_c
+    with assert_raises(AttributeError):
+        field_tester.field_c
+
+    # Additionally assert that in the model data, we don't have any values set
+    assert_equals(len(field_tester._model_data), 0)

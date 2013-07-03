@@ -236,10 +236,19 @@ class ModelType(object):
         except KeyError:
             pass
 
+        # We also need to clear this item from the dirty fields, to prevent
+        # an erroneous write of its value on implicit save. OK if it was
+        # not in the dirty fields to begin with.
+        try:
+            instance._dirty_fields.remove(self)
+        except KeyError:
+            pass
+
         # Since we know that the model_data no longer contains the value, we can
         # avoid the possible database lookup that a future get() call would
         # entail by setting the cached value now to its default value.
         self._set_cached_value(instance, copy.deepcopy(self.default))
+
 
     def __repr__(self):
         return "<{0.__class__.__name__} {0._name}>".format(self)
@@ -615,12 +624,10 @@ class XBlock(Plugin):
             return
         try:
             # Create dictionary mapping between dirty fields and data cache values
-            fields_to_save = {}
-            for mt in self._dirty_fields:
-                # Cache should have the right values
-                mt_value = self._model_data_cache[mt.name]
-                fields_to_save[mt.name] = mt.to_json(mt_value)
-
+            # A `field` is an instance of `ModelType`
+            fields_to_save = {field.name: field.to_json(self._model_data_cache[field.name])\
+                              for field in self._dirty_fields}
+            print "fields_to_save:", fields_to_save
             # Throws KeyValueMultiSaveError if things go wrong
             self._model_data.update(fields_to_save)
 
